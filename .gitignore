@@ -1,0 +1,39 @@
+# file
+scraper.py
+
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environment
+venv/
+env/
+
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints/
+
+# VSCode settings
+.vscode/
+
+# OS-specific files
+.DS_Store
+Thumbs.db
+
+# Logs and temp files
+*.log
+*.tmp
+
+# Environment variables
+.env
+
+# Data files
+*.csv
+*.json
+*.xlsx
+
+# Cache and compiled files
+*.egg-info/
+*.pyo
+*.pyd
+*.so
