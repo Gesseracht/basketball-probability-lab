@@ -1,7 +1,6 @@
 import numpy as np
 import pandas as pd
-import requests
-
+from datetime import timedelta
 
 class ELO:
     def __init__(self):
@@ -12,22 +11,26 @@ class ELO:
         if team_name not in self.teams:
             self.teams[team_name] = {
                 'elo': 1000,
-                'n_games':0,
+                'last_game_date': None,
+                'season_games': 0,
                 'history': []
             }
 
     def _calculate_win_probability(self, elo1, elo2):
         return 1 / (1 + 10 ** ((elo2 - elo1) / 400))
 
+
     def get_k(self, team_name):
-        self._initialize_team(team_name)
-        n_games = self.teams[team_name]['n_games']
-        return np.round(16 + 16 * np.exp(-0.072 * (n_games - 1)), 0)
+        n_games = self.teams[team_name]['season_games']
+        decay_rate = 0.09
+        return np.round(20 + 20 * np.exp(-decay_rate * (n_games - 1)), 0)
+
 
     def get_elo(self, team_name):
         self._initialize_team(team_name)
         return self.teams[team_name]['elo']
-    
+
+
     def predict_match(self, home, away):
         elo_home = self.get_elo(home)
         elo_away = self.get_elo(away)
@@ -65,14 +68,19 @@ class ELO:
         r1 = self.get_elo(home)
         r2 = self.get_elo(away)
 
+        last_date_home = self.teams[home].get('last_game_date')
+        if last_date_home and date - last_date_home > timedelta(days=90):
+            self.teams[home]['season_games'] = 0
+        
+        last_date_away = self.teams[away].get('last_game_date')
+        if last_date_away and date - last_date_away > timedelta(days=90):
+            self.teams[away]['season_games'] = 0
+
         k1 = self.get_k(home)
         k2 = self.get_k(away)
 
         e1 = self._calculate_win_probability(r1, r2)
         e2 = 1 - e1
-
-        e1 = 1 / (1 + 10 ** ((r2 - r1) / 400))
-        e2 = 1 / (1 + 10 ** ((r1 - r2) / 400))
 
         # winner stored as W for Home wins and L for Away wins
         s1 = int(winner == 'W')
@@ -84,8 +92,11 @@ class ELO:
         self.teams[home]['elo'] = r1_prime
         self.teams[away]['elo'] = r2_prime
 
-        self.teams[home]['n_games'] += 1
-        self.teams[away]['n_games'] += 1
+        self.teams[home]['season_games'] += 1
+        self.teams[away]['season_games'] += 1
+
+        self.teams[home]['last_game_date'] = date
+        self.teams[away]['last_game_date'] = date
 
         self.teams[home]['history'].append((date, r1_prime))
         self.teams[away]['history'].append((date, r2_prime))
@@ -100,7 +111,7 @@ class ELO:
                 'Rank': i + 1,
                 'Team': team_name,
                 'Elo': info['elo'],
-                'Games': info['n_games']
+                'Games': info['season_games']
             }
             for i, (team_name, info) in enumerate(sorted_teams)
         ]

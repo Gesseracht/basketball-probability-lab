@@ -12,6 +12,7 @@ path_file = os.path.join(parent, r'data\raw\data.csv')
 
 elo = ELO()
 df = pd.read_csv(path_file)
+df['GAME_DATE'] = pd.to_datetime(df['GAME_DATE'])
 
 for _, row in df.iterrows(): 
     date = row['GAME_DATE']    
@@ -20,6 +21,6 @@ for _, row in df.iterrows():
     winner = row['WL_HOME'] 
     elo.update_match(date=date, home=home, away=away, winner=winner)
 
-print(elo.get_leaderboard(top_n=10))
+print(elo.get_leaderboard(top_n=30))
 
 # python test.py
