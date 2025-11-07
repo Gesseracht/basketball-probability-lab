@@ -7,8 +7,7 @@ from scraper import Scraper
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 parent = Path(__file__).resolve().parent.parent
-path_file = os.path.join(parent, r'data\raw\data.csv')
-
+path_file = os.path.join(parent, r'data\raw\available_players.csv')
 
 elo = ELO()
 df = pd.read_csv(path_file)
